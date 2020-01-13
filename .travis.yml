@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker:
+
+before_install:
+  - docker build -t heyshelton1/react-test -f ./client/Dockerfile.dev
+
+scripts:
+  - docker run -e CI=true heyshelton1/react-test npm test
+
+after_susccess:
+  - docker build -t heyshelton1/multi-client ./client
+  - docker build -t heyshelton1/multi-nginx ./nginx
+  - docker build -t heyshelton1/multi-server ./server
+  - docker build -t heyshelton1/multi-worker ./worker
+  # log into docker hub
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # push image to docker hub
+  - docker push heyshelton1/multi-client
+  - docker push heyshelton1/multi-nginx
+  - docker push heyshelton1/multi-server
+  - docker push heyshelton1/multi-worker
